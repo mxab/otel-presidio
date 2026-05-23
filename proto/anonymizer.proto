@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package presidio;
+
+option go_package = "github.com/mxab/presidio-processor/client;client";
+
+service AnonymizerService {
+  rpc AnonymizeBatch (BatchRequest) returns (BatchResponse);
+}
+
+message BatchRequest {
+  repeated string texts = 1;
+  string language = 2;
+}
+
+message BatchResponse {
+  repeated string anonymized_texts = 1;
+}

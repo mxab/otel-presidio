@@ -1,0 +1,21 @@
+{
+    "snyk.advanced.autoSelectOrganization": true,
+    "go.lintTool": "golangci-lint-v2",
+    "go.lintFlags": [
+        "--path-mode=abs",
+        "--fast-only"
+    ],
+    "go.formatFlags": [
+        "fmt",
+        "--stdin"
+    ],
+    "go.alternateTools": {
+        "go": "~/.local/share/mise/installs/go/1.26.2/bin/go"
+    },
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.cwd": "presido-anoymizer"
+}

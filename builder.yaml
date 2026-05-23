@@ -1,0 +1,16 @@
+dist:
+  name: presidio-collector
+  description: "Custom OTel Collector with Presidio processor"
+  output_path: ./build
+
+exporters:
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.100.0
+
+receivers:
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.100.0
+
+processors:
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.100.0
+  # Here you use the dashed module name from your go.mod
+  - gomod: github.com/mxab/presidio-processor v0.0.0
+    path: ./presidio-processor # Path to the directory on your local machine

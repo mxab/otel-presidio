@@ -1,0 +1,24 @@
+[project]
+name = "my-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=2.37.0",
+    "opentelemetry-distro>=0.62b1",
+    "opentelemetry-exporter-otlp>=1.41.1",
+    "opentelemetry-instrumentation-asyncio==0.62b1",
+    "opentelemetry-instrumentation-dbapi==0.62b1",
+    "opentelemetry-instrumentation-grpc==0.62b1",
+    "opentelemetry-instrumentation-httpx==0.62b1",
+    "opentelemetry-instrumentation-logging==0.62b1",
+    "opentelemetry-instrumentation-openai-v2>=2.4b0",
+    "opentelemetry-instrumentation-requests==0.62b1",
+    "opentelemetry-instrumentation-sqlite3==0.62b1",
+    "opentelemetry-instrumentation-threading==0.62b1",
+    "opentelemetry-instrumentation-tortoiseorm==0.62b1",
+    "opentelemetry-instrumentation-urllib==0.62b1",
+    "opentelemetry-instrumentation-urllib3==0.62b1",
+    "opentelemetry-instrumentation-wsgi==0.62b1",
+]

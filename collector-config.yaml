@@ -1,0 +1,36 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlp_grpc:
+    endpoint: otel-lgtm:4317
+    tls:
+      insecure: true
+processors:
+  presidio:
+    endpoint: localhost:50051
+    tls:
+      insecure: true
+    attributes:
+      - "gen_ai.input.messages"
+      - "gen_ai.output.messages"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [presidio]
+      exporters: [debug, otlp_grpc]
+    metrics:
+      receivers: [otlp]
+      exporters: [debug, otlp_grpc]
+    logs:
+      receivers: [otlp]
+      exporters: [debug, otlp_grpc]
