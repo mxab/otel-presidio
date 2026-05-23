@@ -1,8 +1,11 @@
 # Run containers with default ports
 
-include:
-  - ../docker-compose.yml
 services:
+  anonymizer:
+    build:
+      context: ./../anonymizer
+      dockerfile: Dockerfile
+
   otel-lgtm:
     image: grafana/otel-lgtm:latest
     ports:
@@ -10,6 +13,9 @@ services:
   otel-collector:
     build:
       context: ./../
+      dockerfile: demo/collector/Dockerfile
     ports:
       - "4317:4317"
       - "4318:4318"
+    volumes:
+      - ./config/:/otelcol/config/

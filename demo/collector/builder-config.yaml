@@ -12,7 +12,7 @@ exporters:
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.152.0
   - gomod: github.com/mxab/presidio-processor v0.0.0
-    path: /build/presidio-processor
+    path: ./processor
     name: presido
 
  

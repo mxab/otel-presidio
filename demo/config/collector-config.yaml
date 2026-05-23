@@ -15,7 +15,7 @@ exporters:
       insecure: true
 processors:
   presidio:
-    endpoint: localhost:50051
+    endpoint: anonymizer:5051
     tls:
       insecure: true
     attributes:

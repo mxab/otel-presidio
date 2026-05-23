@@ -53,6 +53,10 @@ async def serve():
     await server.wait_for_termination()
 
 
+def run():
+    asyncio.run(serve())
+
+
 if __name__ == "__main__":
     # Run the async event loop
-    asyncio.run(serve())
+    run()
