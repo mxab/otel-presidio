@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package presidio;
 
-option go_package = "github.com/mxab/presidio-processor/client;client";
+option go_package = "github.com/mxab/otel-presidio/processor/client;client";
 
 service AnonymizerService {
   rpc AnonymizeBatch (BatchRequest) returns (BatchResponse);

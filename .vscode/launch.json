@@ -8,7 +8,7 @@
             "name": "server",
             "type": "debugpy",
             "request": "launch",
-            "cwd": "${workspaceFolder}/presido-anoymizer",
+            "cwd": "${workspaceFolder}/anonymizer",
             "program": "main.py",
             "console": "integratedTerminal",
             "env": {

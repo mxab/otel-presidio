@@ -8,11 +8,12 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configgrpc"
 	"go.opentelemetry.io/collector/consumer/consumertest"
+	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 )
 
-func TestDeploymentProcessor(t *testing.T) {
+func TestTracesProcessor(t *testing.T) {
 	clientConfig := configgrpc.NewDefaultClientConfig()
 	clientConfig.Endpoint = "localhost:5051" // Ensure this matches the port your Presidio anonymizer is listening on
 	clientConfig.TLS.Insecure = true         // Disable TLS for testing; ensure your Presidio server is configured accordingly
@@ -92,3 +93,49 @@ func TestDeploymentProcessor(t *testing.T) {
 // 		_ = processor.ConsumeTraces(context.Background(), td)
 // 	}
 // }
+
+func TestLogsProcessor(t *testing.T) {
+	// Similar structure to TestTracesProcessor, but create and verify logs instead of traces
+	clientConfig := configgrpc.NewDefaultClientConfig()
+	clientConfig.Endpoint = "localhost:5051" // Ensure this matches the port your Presidio anonymizer is listening on
+	clientConfig.TLS.Insecure = true         // Disable TLS for testing; ensure your Presidio server is configured accordingly
+	config := &Config{
+		ClientConfig: clientConfig,
+		Attributes:   []string{"foo.bar", "flim.flam"},
+	}
+
+	sink := new(consumertest.LogsSink)
+
+	telemetrySettings := component.TelemetrySettings{
+		Logger: zap.NewNop(),
+	}
+	processor, err := newLogsProcessor(zap.NewNop(), telemetrySettings, config, sink)
+	require.NoError(t, err)
+
+	err = processor.Start(t.Context(), nil)
+	require.NoError(t, err)
+
+	ld := plog.NewLogs()
+	rl := ld.ResourceLogs().AppendEmpty()
+	record := rl.ScopeLogs().AppendEmpty().LogRecords().AppendEmpty()
+	record.Body().SetStr("Feel free to contact me via bob@example.com or send a letter to 156 Banana St, Springfield, IL")
+	record.Attributes().PutStr("foo.bar", "this is important: 234-567-8901")
+	record.Attributes().PutStr("flim.flam", "another important thing: january the first of 2020")
+
+	err = processor.ConsumeLogs(t.Context(), ld)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, sink.LogRecordCount())
+	processedLog := sink.AllLogs()[0].ResourceLogs().At(0).ScopeLogs().At(0).LogRecords().At(0)
+	body := processedLog.Body().Str()
+	assert.Equal(t, "Feel free to contact me via <EMAIL_ADDRESS> or send a letter to 156 Banana St, <LOCATION>, <LOCATION>", body)
+
+	fooBar, ok := processedLog.Attributes().Get("foo.bar")
+	assert.True(t, ok)
+	assert.Equal(t, "this is important: <PHONE_NUMBER>", fooBar.Str())
+
+	flimFlam, ok := processedLog.Attributes().Get("flim.flam")
+	assert.True(t, ok)
+	assert.Equal(t, "another important thing: <DATE_TIME>", flimFlam.Str())
+
+}

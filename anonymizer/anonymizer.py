@@ -1,15 +1,12 @@
 from typing import Optional
 
-import grpc
-
 
 import anonymizer_pb2
 import anonymizer_pb2_grpc
-
+import logging
 
 from presidio_analyzer import AnalyzerEngine, BatchAnalyzerEngine
-from presidio_anonymizer import BatchAnonymizerEngine, AnonymizerEngine
-import logging
+from presidio_anonymizer import AnonymizerEngine, BatchAnonymizerEngine
 
 
 # 3. Create your server class by inheriting from the generated Servicer base class
