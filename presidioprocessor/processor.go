@@ -3,7 +3,7 @@ package presidioprocessor
 import (
 	"context"
 
-	"github.com/mxab/otel-presidio/processor/client"
+	"github.com/mxab/otel-presidio/presidioprocessor/client"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
@@ -205,6 +205,7 @@ func (p *presidioLogsProcessor) processLogs(ctx context.Context, logs plog.Logs)
 	}
 	var pointers []pointer
 
+	includeLogBody := p.config.IncludeLogBody
 	// 1. Iterate through log records and collect texts to anonymize based on config.Attributes
 
 	for i := 0; i < logs.ResourceLogs().Len(); i++ {
@@ -214,13 +215,15 @@ func (p *presidioLogsProcessor) processLogs(ctx context.Context, logs plog.Logs)
 			for k := 0; k < sl.LogRecords().Len(); k++ {
 				logRecord := sl.LogRecords().At(k)
 
-				logBody := logRecord.Body().Str()
-				textsToAnonymize = append(textsToAnonymize, logBody)
-				pointers = append(pointers, pointer{
-					updateFunc: func(cleanText string) {
-						logRecord.Body().SetStr(cleanText)
-					},
-				})
+				if includeLogBody {
+					logBody := logRecord.Body().Str()
+					textsToAnonymize = append(textsToAnonymize, logBody)
+					pointers = append(pointers, pointer{
+						updateFunc: func(cleanText string) {
+							logRecord.Body().SetStr(cleanText)
+						},
+					})
+				}
 
 				for _, attrName := range p.config.Attributes {
 					if val, ok := logRecord.Attributes().Get(attrName); ok {

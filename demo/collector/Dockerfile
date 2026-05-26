@@ -9,8 +9,8 @@ COPY demo/collector/builder-config.yaml .
 
 RUN --mount=type=cache,target=/root/.cache/go-build GO111MODULE=on go install go.opentelemetry.io/collector/cmd/builder@v0.152.0
 
-COPY processor/go.mod processor/go.sum ./
-COPY processor ./processor
+COPY presidioprocessor/go.mod presidioprocessor/go.sum ./
+COPY presidioprocessor ./presidioprocessor
 
 RUN --mount=type=cache,target=/root/.cache/go-build builder --config builder-config.yaml
 

@@ -6,7 +6,9 @@ from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, IPvAnyInterface
+from pydantic import BaseModel
+
+import logging
 
 
 class TLS(BaseModel):
@@ -18,7 +20,7 @@ class Config(BaseSettings):
 
     # gRPC server settings
     host: str = "0.0.0.0"
-    port: int = 5051
+    port: int = 50051
     tls: TLS = TLS()
 
 
@@ -45,15 +47,16 @@ async def serve():
         raise NotImplementedError(
             "TLS is not implemented in this example. Set tls.insecure to true."
         )
-
-    print(f"gRPC Server listening on port {address}...")
+    logging.info(f"gRPC Server starting on port {address}...")
     await server.start()
+    logging.info("gRPC Server started successfully.")
 
     # Keep the server running
     await server.wait_for_termination()
 
 
 def run():
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(serve())
 
 

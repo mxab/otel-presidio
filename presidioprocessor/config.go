@@ -14,9 +14,7 @@ type Config struct {
 	// Attributes is a list of trace/log attribute keys to inspect and mask
 	Attributes []string `mapstructure:"attributes"`
 
-	// Entities specifies which PII entities Presidio should look for (e.g., "EMAIL_ADDRESS", "CREDIT_CARD")
-	// If empty, Presidio usually defaults to scanning all supported entities.
-	Entities []string `mapstructure:"entities"`
+	IncludeLogBody bool `mapstructure:"include_log_body"`
 }
 
 // Validate checks if the receiver configuration is valid

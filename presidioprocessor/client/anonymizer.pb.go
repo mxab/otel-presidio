@@ -128,7 +128,7 @@ const file_anonymizer_proto_rawDesc = "" +
 	"\rBatchResponse\x12)\n" +
 	"\x10anonymized_texts\x18\x01 \x03(\tR\x0fanonymizedTexts2V\n" +
 	"\x11AnonymizerService\x12A\n" +
-	"\x0eAnonymizeBatch\x12\x16.presidio.BatchRequest\x1a\x17.presidio.BatchResponseB7Z5github.com/mxab/otel-presidio/processor/client;clientb\x06proto3"
+	"\x0eAnonymizeBatch\x12\x16.presidio.BatchRequest\x1a\x17.presidio.BatchResponseB?Z=github.com/mxab/otel-presidio/presidioprocessor/client;clientb\x06proto3"
 
 var (
 	file_anonymizer_proto_rawDescOnce sync.Once

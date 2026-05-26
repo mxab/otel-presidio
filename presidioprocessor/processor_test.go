@@ -1,8 +1,11 @@
 package presidioprocessor
 
 import (
+	"path/filepath"
 	"testing"
 
+	"github.com/moby/moby/api/types/build"
+	"github.com/moby/moby/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/collector/component"
@@ -11,12 +14,17 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
+
+	tc "github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func TestTracesProcessor(t *testing.T) {
+
+	endpoint := anonymizerConnection(t)
 	clientConfig := configgrpc.NewDefaultClientConfig()
-	clientConfig.Endpoint = "localhost:5051" // Ensure this matches the port your Presidio anonymizer is listening on
-	clientConfig.TLS.Insecure = true         // Disable TLS for testing; ensure your Presidio server is configured accordingly
+	clientConfig.Endpoint = endpoint // Ensure this matches the port your Presidio anonymizer is listening on
+	clientConfig.TLS.Insecure = true // Disable TLS for testing; ensure your Presidio server is configured accordingly
 	config := &Config{
 		ClientConfig: clientConfig,
 		Attributes:   []string{"foo.bar", "flim.flam"},
@@ -96,12 +104,62 @@ func TestTracesProcessor(t *testing.T) {
 
 func TestLogsProcessor(t *testing.T) {
 	// Similar structure to TestTracesProcessor, but create and verify logs instead of traces
+	endpoint := anonymizerConnection(t)
 	clientConfig := configgrpc.NewDefaultClientConfig()
-	clientConfig.Endpoint = "localhost:5051" // Ensure this matches the port your Presidio anonymizer is listening on
-	clientConfig.TLS.Insecure = true         // Disable TLS for testing; ensure your Presidio server is configured accordingly
+	clientConfig.Endpoint = endpoint
+	clientConfig.TLS.Insecure = true // Disable TLS for testing; ensure your Presidio server is configured accordingly
 	config := &Config{
-		ClientConfig: clientConfig,
-		Attributes:   []string{"foo.bar", "flim.flam"},
+		ClientConfig:   clientConfig,
+		Attributes:     []string{"foo.bar", "flim.flam"},
+		IncludeLogBody: false, // Set to true if you want to also anonymize the log body
+	}
+
+	sink := new(consumertest.LogsSink)
+
+	telemetrySettings := component.TelemetrySettings{
+		Logger: zap.NewNop(),
+	}
+	processor, err := newLogsProcessor(zap.NewNop(), telemetrySettings, config, sink)
+	require.NoError(t, err)
+
+	err = processor.Start(t.Context(), nil)
+	require.NoError(t, err)
+
+	ld := plog.NewLogs()
+	rl := ld.ResourceLogs().AppendEmpty()
+	record := rl.ScopeLogs().AppendEmpty().LogRecords().AppendEmpty()
+	record.Body().SetStr("Feel free to contact me via bob@example.com or send a letter to 156 Banana St, Springfield, IL")
+	record.Attributes().PutStr("foo.bar", "this is important: 234-567-8901")
+	record.Attributes().PutStr("flim.flam", "another important thing: january the first of 2020")
+
+	err = processor.ConsumeLogs(t.Context(), ld)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, sink.LogRecordCount())
+	processedLog := sink.AllLogs()[0].ResourceLogs().At(0).ScopeLogs().At(0).LogRecords().At(0)
+	body := processedLog.Body().Str()
+	// include log body is false, so it should remain unchanged
+	assert.Equal(t, "Feel free to contact me via bob@example.com or send a letter to 156 Banana St, Springfield, IL", body)
+
+	fooBar, ok := processedLog.Attributes().Get("foo.bar")
+	assert.True(t, ok)
+	assert.Equal(t, "this is important: <PHONE_NUMBER>", fooBar.Str())
+
+	flimFlam, ok := processedLog.Attributes().Get("flim.flam")
+	assert.True(t, ok)
+	assert.Equal(t, "another important thing: <DATE_TIME>", flimFlam.Str())
+
+}
+func TestLogsIncludeBodyProcessor(t *testing.T) {
+	// Similar structure to TestTracesProcessor, but create and verify logs instead of traces
+	endpoint := anonymizerConnection(t)
+	clientConfig := configgrpc.NewDefaultClientConfig()
+	clientConfig.Endpoint = endpoint
+	clientConfig.TLS.Insecure = true // Disable TLS for testing; ensure your Presidio server is configured accordingly
+	config := &Config{
+		ClientConfig:   clientConfig,
+		Attributes:     []string{"foo.bar", "flim.flam"},
+		IncludeLogBody: true,
 	}
 
 	sink := new(consumertest.LogsSink)
@@ -137,5 +195,30 @@ func TestLogsProcessor(t *testing.T) {
 	flimFlam, ok := processedLog.Attributes().Get("flim.flam")
 	assert.True(t, ok)
 	assert.Equal(t, "another important thing: <DATE_TIME>", flimFlam.Str())
+
+}
+
+func anonymizerConnection(t *testing.T) (endpoint string) {
+	opts := []tc.ContainerCustomizer{
+		tc.WithExposedPorts("50051/tcp"),
+		tc.WithWaitStrategy(wait.ForLog("gRPC Server started successfully.")),
+		tc.WithDockerfile(tc.FromDockerfile{
+			Context:    filepath.Join("..", "anonymizer"),
+			Dockerfile: "Dockerfile",
+			BuildOptionsModifier: func(ibo *client.ImageBuildOptions) {
+
+				ibo.Version = build.BuilderBuildKit
+			},
+		}),
+	}
+
+	ctx := t.Context()
+	c, err := tc.Run(ctx, "", opts...)
+	require.NoError(t, err)
+
+	endpoint, err = c.Endpoint(ctx, "")
+	require.NoError(t, err)
+
+	return endpoint
 
 }

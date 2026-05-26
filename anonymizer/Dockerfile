@@ -29,6 +29,7 @@ COPY . /app
 
 FROM python:3.12-slim
 
+EXPOSE 50051
 # Copy the environment, but not the source code
 COPY --from=builder /app /app
 
