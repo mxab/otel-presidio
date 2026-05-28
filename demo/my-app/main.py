@@ -33,7 +33,7 @@ def main():
             },
             {
                 "role": "user",
-                "content": "Hi my name is Max and my email is max@example.com and I live in New York at 123 Main St.",
+                "content": "Hi my name is Max and my email is max@example.com and I live in New York City at 280 Broadway.",
             },
         ],
     )

@@ -14,8 +14,13 @@ It is based on [Microsoft's Presidio](https://microsoft.github.io/presidio/) pro
 ## Architecture
 
 ```mermaid
-graph TD
-    A[otel collector with presidio processor] --> B[ presid anonymizer service]
+graph LR
+    subgraph OTELCollector
+        B[otel collector with presidio processor] -- grpc batches --> C[ presidio anonymizer service]
+        C -- cleaned data baches --> B
+    end
+    A[otel instrumented app] -- otlp --> OTELCollector
+    OTELCollector -- otlp ----> D[otel sink, e.g. loki,tempo]
     
 ```
 This project consists of two main components:
