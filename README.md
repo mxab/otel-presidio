@@ -1,6 +1,13 @@
 # Presidio OpenTelemetry Processor
 
-This otel processor is used to detect and redact sensitive data in logs and traces send via otlp through a otel collector pipeline. It is based on Microsoft's Presidio project.
+This otel processor is used to detect and redact sensitive PII data in OpenTelemetry logs and traces send via otlp through a otel collector pipeline.
+It is based on [Microsoft's Presidio](https://microsoft.github.io/presidio/) project.
+
+### Redacted Logs
+<img width="1530" height="849" alt="redacted logs" src="https://github.com/user-attachments/assets/c238a03d-077c-4e9c-b686-faf67037bbfb" />
+
+### Redacted Traces
+<img width="1263" height="889" alt="redacted traces" src="https://github.com/user-attachments/assets/dd5ab936-a501-44c5-a84f-fe13473d8902" />
 
 ## Architecture
 
