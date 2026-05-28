@@ -4,6 +4,11 @@ This otel processor is used to detect and redact sensitive data in logs and trac
 
 ## Architecture
 
+```mermaid
+graph TD
+    A[otel collector with presidio processor] --> B[ presid anonymizer service]
+    
+```
 This project consists of two main components:
 1. The `presidioprocessor` package that is a custom otel processor that goes through the logs and traces and sends them to the `anonymizer` service via gRPC.
 2. The `anonymizer` service that receives the logs and traces, detects and redacts sensitive data using Presidio in a batch manner, and sends the cleaned texts back to the processor.
@@ -49,7 +54,13 @@ Here are [more details for the configuration](https://github.com/open-telemetry/
 
 ## Run the custom otel collector
 
-After building the custom otel collector with the above configuration, you can run it with a configuration file that includes the `presidio` processor. Below is an example of the collector configuration file.
+After building the custom otel collector with the above configuration, you can run it with a configuration file that includes the `presidio` processor. 
+
+```sh
+./otelcol-dev --config your-config.yaml
+```
+
+Below is an example of the collector configuration file.
 
 ```yaml
 receivers:
@@ -68,14 +79,14 @@ processors:
   presidio:
     endpoint: anonymizer:50051
     tls:
-      insecure: true
+      insecure: true # currently tls is not supported
     attributes: # attributes to check for sensitive data and anonymize
       - "gen_ai.input.messages"
       - "gen_ai.output.messages"
     include_log_body: true  # whether to include log body in the anonymization process
 
 service:
-  pipelines:
+  pipelines: # consider adding routing and batching processors for better performance in production
     traces:
       receivers: [otlp]
       processors: [presidio]
@@ -85,6 +96,17 @@ service:
       processors: [presidio]
       exporters: [debug]
 ```
+
+See the [demo folder](./demo/) for a running example
+
+### Run the anonymizer service
+The anonymizer service is a gRPC server that listens for requests from the processor, detects and redacts sensitive data using Presidio, and sends the cleaned texts back to the processor. You can run it with the following command:
+
+```sh
+docker run -p 50051:50051 --name anonymizer --rm ghcr.io/mxab/otel-presidio:main
+```
+
+Currently you can specify `HOST` and `PORT` environment variables to change the default host and port of the anonymizer service.
 
 ## Thanks to this blog for the instructions on how to build a custom otel collector processor:
 
