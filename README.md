@@ -4,10 +4,12 @@ This otel processor is used to detect and redact sensitive PII data in OpenTelem
 It is based on [Microsoft's Presidio](https://microsoft.github.io/presidio/) project.
 
 ### Redacted Logs
-<img width="1530" height="849" alt="redacted logs" src="https://github.com/user-attachments/assets/c238a03d-077c-4e9c-b686-faf67037bbfb" />
+<img width="1520" height="918" alt="redacted_logs" src="https://github.com/user-attachments/assets/5b8fc802-db23-486e-82c7-4780d45559a0" />
 
 ### Redacted Traces
-<img width="1263" height="889" alt="redacted traces" src="https://github.com/user-attachments/assets/dd5ab936-a501-44c5-a84f-fe13473d8902" />
+
+<img width="1261" height="890" alt="redacted_traces" src="https://github.com/user-attachments/assets/0421371b-cb22-4726-be24-27e8fd286194" />
+
 
 ## Architecture
 
